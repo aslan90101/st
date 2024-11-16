@@ -1,7 +1,32 @@
---STRENGTH RECCOMENDED TO BE AT 400
- 
- 
-local bodyvel_Name = "FlingVelocity"
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Создаем GUI элементы
+local screenGui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local superPowerButton = Instance.new("TextButton")
+
+-- Настройка Frame
+frame.Size = UDim2.new(0.1, 0, 0.1, 0)
+frame.Position = UDim2.new(0.90, 0, 0.40, 0)
+frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+frame.Parent = screenGui
+
+-- Настройка кнопки "Суперсила"
+superPowerButton.Size = UDim2.new(1, 0, 1, 0)
+superPowerButton.Position = UDim2.new(0, 0, 0, 0)
+superPowerButton.Text = "Суперсила (Выключена)"
+superPowerButton.Parent = frame
+
+-- Переменная для состояния функции
+local superPowerEnabled = false
+
+-- Функция для активации/деактивации суперсилы
+local function toggleSuperPower()
+    superPowerEnabled = not superPowerEnabled
+    if superPowerEnabled then
+        superPowerButton.Text = "Суперсила (Включена)"
+        local bodyvel_Name = "FlingVelocity"
 local userinputs = game:GetService("UserInputService")
 local w = game:GetService("Workspace")
 local r = game:GetService("RunService")
@@ -36,3 +61,63 @@ w.ChildAdded:Connect(function(model)
 		end
 	end
 end)
+        print("Суперсила активирована.")
+        
+        -- Пример реализации суперсилы (увеличение скорости)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 50 -- Увеличиваем скорость
+        end
+    else
+        superPowerButton.Text = "Суперсила (Выключена)"
+        local bodyvel_Name = "FlingVelocity"
+local userinputs = game:GetService("UserInputService")
+local w = game:GetService("Workspace")
+local r = game:GetService("RunService")
+local d = game:GetService("Debris")
+local strength = 18
+w.ChildAdded:Connect(function(model)
+	if model.Name == "GrabParts" then
+		local part_to_impulse = model["GrabPart"]["WeldConstraint"].Part1
+ 
+		if part_to_impulse then
+			print("Part found!")
+ 
+			local inputObj
+			local velocityObj = Instance.new("BodyVelocity", part_to_impulse)
+ 
+			model:GetPropertyChangedSignal("Parent"):Connect(function()
+				if not model.Parent then
+					if userinputs:GetLastInputType() == Enum.UserInputType.MouseButton2 then
+						print("Launched!")
+						velocityObj.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+						velocityObj.Velocity = workspace.CurrentCamera.CFrame.lookVector * strength
+						d:AddItem(velocityObj, 1)
+					elseif userinputs:GetLastInputType() == Enum.UserInputType.MouseButton1 then
+						velocityObj:Destroy()
+						print("Cancel Launch!")
+					else
+						velocityObj:Destroy()
+						print("No two keys pressed!")
+					end
+				end
+			end)
+		end
+	end
+end)
+        print("Суперсила деактивирована.")
+        
+        -- Возвращаем скорость к норме
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16 -- Возвращаем обычную скорость
+        end
+    end
+end
+
+-- Подключение функции к кнопке
+superPowerButton.MouseButton1Click:Connect(toggleSuperPower)
+
+-- Добавляем ScreenGui в StarterGui
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
